@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Repositories\Contracts\OrderRepositoryInterface;
+use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\OrderRepository;
+use App\Repositories\Eloquent\PaymentRepository;
 use App\Repositories\Eloquent\UserRepository;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,6 +20,7 @@ class RepositoryServiceProvider extends ServiceProvider
     public array $bindings = [
         UserRepositoryInterface::class => UserRepository::class,
         OrderRepositoryInterface::class => OrderRepository::class,
+        PaymentRepositoryInterface::class => PaymentRepository::class,
     ];
 
     /**

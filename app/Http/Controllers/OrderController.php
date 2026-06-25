@@ -31,7 +31,7 @@ class OrderController extends Controller
             perPage: (int) $request->query('per_page', 15),
         );
 
-        return $this->paginated(new OrderCollection($orders), 'Orders retrieved.');
+        return $this->paginated(new OrderCollection($orders), 'messages.orders.retrieved');
     }
 
     /**
@@ -46,7 +46,7 @@ class OrderController extends Controller
 
         $order = $this->orderService->createOrder($dto);
 
-        return $this->created(new OrderResource($order), 'Order created successfully.');
+        return $this->created(new OrderResource($order), 'messages.orders.created');
     }
 
     /**
@@ -57,10 +57,10 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return $this->notFound('Order not found.');
+            return $this->notFound('messages.orders.not_found');
         }
 
-        return $this->success(new OrderResource($order), 'Order retrieved.');
+        return $this->success(new OrderResource($order), 'messages.orders.shown');
     }
 
     /**
@@ -71,13 +71,13 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return $this->notFound('Order not found.');
+            return $this->notFound('messages.orders.not_found');
         }
 
         $dto = UpdateOrderDTO::fromArray($request->validated());
         $updatedOrder = $this->orderService->updateOrder($order, $dto);
 
-        return $this->success(new OrderResource($updatedOrder), 'Order updated successfully.');
+        return $this->success(new OrderResource($updatedOrder), 'messages.orders.updated');
     }
 
     /**
@@ -88,13 +88,13 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return $this->notFound('Order not found.');
+            return $this->notFound('messages.orders.not_found');
         }
 
         $newStatus = OrderStatus::from($request->validated('status'));
         $updatedOrder = $this->orderService->updateStatus($order, $newStatus);
 
-        return $this->success(new OrderResource($updatedOrder), 'Order status updated successfully.');
+        return $this->success(new OrderResource($updatedOrder), 'messages.orders.status_updated');
     }
 
     /**
@@ -105,11 +105,11 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return $this->notFound('Order not found.');
+            return $this->notFound('messages.orders.not_found');
         }
 
         $this->orderService->deleteOrder($order);
 
-        return $this->noContent('Order deleted successfully.');
+        return $this->noContent('messages.orders.deleted');
     }
 }

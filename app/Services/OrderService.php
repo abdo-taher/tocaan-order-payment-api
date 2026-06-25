@@ -92,7 +92,7 @@ class OrderService
 
         if ($order->payment()->exists()) {
             throw ValidationException::withMessages([
-                'order' => ['Orders with payments cannot be deleted.'],
+                'order' => [__('messages.orders.has_payments')],
             ]);
         }
 
@@ -108,7 +108,7 @@ class OrderService
     {
         if ($order->status !== OrderStatus::Pending) {
             throw ValidationException::withMessages([
-                'order' => ['Only pending orders can be modified.'],
+                'order' => [__('messages.orders.only_pending_modify')],
             ]);
         }
     }
@@ -127,7 +127,7 @@ class OrderService
 
         if (!in_array($new, $allowed, true)) {
             throw ValidationException::withMessages([
-                'status' => ["Cannot transition from '{$current->value}' to '{$new->value}'."],
+                'status' => [__('messages.orders.invalid_transition', ['from' => $current->value, 'to' => $new->value])],
             ]);
         }
     }

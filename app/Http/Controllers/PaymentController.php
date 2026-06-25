@@ -25,10 +25,10 @@ class PaymentController extends Controller
         $payment = $this->paymentService->processPayment($dto);
 
         if ($payment->status->value === 'successful') {
-            return $this->created(new PaymentResource($payment), 'Payment processed successfully.');
+            return $this->created(new PaymentResource($payment), 'messages.payments.processed');
         }
 
-        return $this->error('Payment processing failed.', 422);
+        return $this->error('messages.payments.failed', 422);
     }
 
     /**
@@ -39,9 +39,9 @@ class PaymentController extends Controller
         $payment = $this->paymentService->getPaymentForOrder($orderId);
 
         if (!$payment) {
-            return $this->notFound('No payment found for this order.');
+            return $this->notFound('messages.payments.not_found');
         }
 
-        return $this->success(new PaymentResource($payment), 'Payment retrieved.');
+        return $this->success(new PaymentResource($payment), 'messages.payments.retrieved');
     }
 }

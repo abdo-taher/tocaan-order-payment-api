@@ -26,7 +26,7 @@ class AuthController extends Controller
 
         $tokenDTO = $this->authService->register($dto);
 
-        return $this->created($tokenDTO->toArray(), 'User registered successfully.');
+        return $this->created($tokenDTO->toArray(), 'messages.auth.registered');
     }
 
     /**
@@ -39,10 +39,10 @@ class AuthController extends Controller
         $tokenDTO = $this->authService->login($dto);
 
         if (!$tokenDTO) {
-            return $this->unauthorized('Invalid credentials.');
+            return $this->unauthorized('messages.auth.invalid_credentials');
         }
 
-        return $this->success($tokenDTO->toArray(), 'Login successful.');
+        return $this->success($tokenDTO->toArray(), 'messages.auth.login_success');
     }
 
     /**
@@ -52,7 +52,7 @@ class AuthController extends Controller
     {
         $this->authService->logout();
 
-        return $this->success(message: 'Successfully logged out.');
+        return $this->success(message: 'messages.auth.logged_out');
     }
 
     /**
@@ -62,6 +62,6 @@ class AuthController extends Controller
     {
         $user = $this->authService->me();
 
-        return $this->success(new UserResource($user), 'User profile retrieved.');
+        return $this->success(new UserResource($user), 'messages.auth.profile_retrieved');
     }
 }

@@ -32,7 +32,7 @@ class OrderCollection extends ResourceCollection
     public function with(Request $request): array
     {
         return [
-            'message' => 'Orders retrieved.',
+            'message' => __('messages.orders.retrieved'),
         ];
     }
 }

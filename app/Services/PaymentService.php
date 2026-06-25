@@ -31,7 +31,7 @@ class PaymentService
 
         if (!$order) {
             throw ValidationException::withMessages([
-                'order_id' => ['Order not found.'],
+                'order_id' => [__('messages.payments.order_not_found')],
             ]);
         }
 
@@ -82,21 +82,21 @@ class PaymentService
         // Only confirmed orders can be paid
         if ($order->status !== OrderStatus::Confirmed) {
             throw ValidationException::withMessages([
-                'order_id' => ['Payment can only be processed for confirmed orders.'],
+                'order_id' => [__('messages.payments.only_confirmed')],
             ]);
         }
 
         // Check if already has a successful payment
         if ($this->paymentRepository->hasSuccessfulPayment($order->id)) {
             throw ValidationException::withMessages([
-                'order_id' => ['This order already has a successful payment.'],
+                'order_id' => [__('messages.payments.already_paid')],
             ]);
         }
 
         // Payment amount must match order total
         if (bccomp((string) $amount, (string) $order->total, 2) !== 0) {
             throw ValidationException::withMessages([
-                'amount' => ['Payment amount must match the order total of ' . $order->total . '.'],
+                'amount' => [__('messages.payments.amount_mismatch', ['total' => $order->total])],
             ]);
         }
     }

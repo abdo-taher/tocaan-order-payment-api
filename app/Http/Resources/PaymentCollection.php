@@ -5,14 +5,14 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class OrderCollection extends ResourceCollection
+class PaymentCollection extends ResourceCollection
 {
     /**
      * The resource that this resource collects.
      *
      * @var string
      */
-    public $collects = OrderResource::class;
+    public $collects = PaymentResource::class;
 
     /**
      * Transform the resource collection into an array.
@@ -32,7 +32,7 @@ class OrderCollection extends ResourceCollection
     public function with(Request $request): array
     {
         return [
-            'message' => __('messages.orders.retrieved'),
+            'message' => __('messages.payments.retrieved'),
         ];
     }
 }

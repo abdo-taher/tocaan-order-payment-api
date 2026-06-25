@@ -13,7 +13,6 @@ use App\Http\Resources\OrderResource;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class OrderController extends Controller
 {
@@ -24,7 +23,7 @@ class OrderController extends Controller
     /**
      * List orders with optional status filter and pagination.
      */
-    public function index(Request $request): OrderCollection
+    public function index(Request $request): JsonResponse
     {
         $orders = $this->orderService->listOrders(
             userId: (int) $request->user()->id,
@@ -32,7 +31,7 @@ class OrderController extends Controller
             perPage: (int) $request->query('per_page', 15),
         );
 
-        return new OrderCollection($orders);
+        return $this->paginated(new OrderCollection($orders), 'messages.orders.retrieved');
     }
 
     /**
@@ -47,10 +46,7 @@ class OrderController extends Controller
 
         $order = $this->orderService->createOrder($dto);
 
-        return response()->json([
-            'message' => 'Order created successfully.',
-            'data' => new OrderResource($order),
-        ], Response::HTTP_CREATED);
+        return $this->created(new OrderResource($order), 'messages.orders.created');
     }
 
     /**
@@ -61,14 +57,10 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return response()->json([
-                'message' => 'Order not found.',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->notFound('messages.orders.not_found');
         }
 
-        return response()->json([
-            'data' => new OrderResource($order),
-        ]);
+        return $this->success(new OrderResource($order), 'messages.orders.shown');
     }
 
     /**
@@ -79,18 +71,13 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return response()->json([
-                'message' => 'Order not found.',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->notFound('messages.orders.not_found');
         }
 
         $dto = UpdateOrderDTO::fromArray($request->validated());
         $updatedOrder = $this->orderService->updateOrder($order, $dto);
 
-        return response()->json([
-            'message' => 'Order updated successfully.',
-            'data' => new OrderResource($updatedOrder),
-        ]);
+        return $this->success(new OrderResource($updatedOrder), 'messages.orders.updated');
     }
 
     /**
@@ -101,18 +88,13 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return response()->json([
-                'message' => 'Order not found.',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->notFound('messages.orders.not_found');
         }
 
         $newStatus = OrderStatus::from($request->validated('status'));
         $updatedOrder = $this->orderService->updateStatus($order, $newStatus);
 
-        return response()->json([
-            'message' => 'Order status updated successfully.',
-            'data' => new OrderResource($updatedOrder),
-        ]);
+        return $this->success(new OrderResource($updatedOrder), 'messages.orders.status_updated');
     }
 
     /**
@@ -123,15 +105,11 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return response()->json([
-                'message' => 'Order not found.',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->notFound('messages.orders.not_found');
         }
 
         $this->orderService->deleteOrder($order);
 
-        return response()->json([
-            'message' => 'Order deleted successfully.',
-        ], Response::HTTP_NO_CONTENT);
+        return $this->noContent('messages.orders.deleted');
     }
 }

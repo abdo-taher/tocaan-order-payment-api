@@ -3,9 +3,15 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Payment;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface PaymentRepositoryInterface
 {
+    /**
+     * Get paginated payments for a user.
+     */
+    public function paginateByUser(int $userId, int $perPage = 15): LengthAwarePaginator;
+
     /**
      * Create a new payment.
      *

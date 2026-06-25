@@ -10,7 +10,6 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
@@ -27,10 +26,7 @@ class AuthController extends Controller
 
         $tokenDTO = $this->authService->register($dto);
 
-        return response()->json([
-            'message' => 'User registered successfully.',
-            'data' => $tokenDTO->toArray(),
-        ], Response::HTTP_CREATED);
+        return $this->created($tokenDTO->toArray(), 'messages.auth.registered');
     }
 
     /**
@@ -43,15 +39,10 @@ class AuthController extends Controller
         $tokenDTO = $this->authService->login($dto);
 
         if (!$tokenDTO) {
-            return response()->json([
-                'message' => 'Invalid credentials.',
-            ], Response::HTTP_UNAUTHORIZED);
+            return $this->unauthorized('messages.auth.invalid_credentials');
         }
 
-        return response()->json([
-            'message' => 'Login successful.',
-            'data' => $tokenDTO->toArray(),
-        ]);
+        return $this->success($tokenDTO->toArray(), 'messages.auth.login_success');
     }
 
     /**
@@ -61,9 +52,7 @@ class AuthController extends Controller
     {
         $this->authService->logout();
 
-        return response()->json([
-            'message' => 'Successfully logged out.',
-        ]);
+        return $this->success(message: 'messages.auth.logged_out');
     }
 
     /**
@@ -73,8 +62,6 @@ class AuthController extends Controller
     {
         $user = $this->authService->me();
 
-        return response()->json([
-            'data' => new UserResource($user),
-        ]);
+        return $this->success(new UserResource($user), 'messages.auth.profile_retrieved');
     }
 }

@@ -5,12 +5,25 @@ namespace App\Repositories\Eloquent;
 use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class PaymentRepository implements PaymentRepositoryInterface
 {
     public function __construct(
         private readonly Payment $model
     ) {}
+
+    /**
+     * Get paginated payments for a user.
+     */
+    public function paginateByUser(int $userId, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->model->newQuery()
+            ->whereHas('order', fn ($query) => $query->where('user_id', $userId))
+            ->with('order')
+            ->latest()
+            ->paginate($perPage);
+    }
 
     /**
      * Create a new payment.

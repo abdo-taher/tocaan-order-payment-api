@@ -21,8 +21,18 @@ class OrderCollection extends ResourceCollection
      */
     public function toArray(Request $request): array
     {
+        return $this->collection->toArray();
+    }
+
+    /**
+     * Get additional data that should be returned with the resource array.
+     *
+     * @return array<string, mixed>
+     */
+    public function with(Request $request): array
+    {
         return [
-            'data' => $this->collection,
+            'message' => 'Orders retrieved.',
         ];
     }
 }

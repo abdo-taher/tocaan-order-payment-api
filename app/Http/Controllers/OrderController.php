@@ -23,7 +23,7 @@ class OrderController extends Controller
     /**
      * List orders with optional status filter and pagination.
      */
-    public function index(Request $request): OrderCollection
+    public function index(Request $request): JsonResponse
     {
         $orders = $this->orderService->listOrders(
             userId: (int) $request->user()->id,
@@ -31,7 +31,7 @@ class OrderController extends Controller
             perPage: (int) $request->query('per_page', 15),
         );
 
-        return new OrderCollection($orders);
+        return $this->paginated(new OrderCollection($orders), 'Orders retrieved.');
     }
 
     /**

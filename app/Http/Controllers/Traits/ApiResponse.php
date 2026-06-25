@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Traits;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Symfony\Component\HttpFoundation\Response;
 
 trait ApiResponse
@@ -19,6 +20,22 @@ trait ApiResponse
         }
 
         return response()->json($response, $code);
+    }
+
+    /**
+     * Return a paginated response using a ResourceCollection.
+     * Envelope: { message, data, meta, links }
+     */
+    protected function paginated(ResourceCollection $collection, string $message = 'Resources retrieved.'): JsonResponse
+    {
+        $paginated = $collection->response()->getData(true);
+
+        return response()->json([
+            'message' => $message,
+            'data' => $paginated['data'],
+            'meta' => $paginated['meta'] ?? null,
+            'links' => $paginated['links'] ?? null,
+        ]);
     }
 
     /**

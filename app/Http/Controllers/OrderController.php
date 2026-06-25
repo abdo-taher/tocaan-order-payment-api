@@ -13,7 +13,6 @@ use App\Http\Resources\OrderResource;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class OrderController extends Controller
 {
@@ -47,10 +46,7 @@ class OrderController extends Controller
 
         $order = $this->orderService->createOrder($dto);
 
-        return response()->json([
-            'message' => 'Order created successfully.',
-            'data' => new OrderResource($order),
-        ], Response::HTTP_CREATED);
+        return $this->created(new OrderResource($order), 'Order created successfully.');
     }
 
     /**
@@ -61,14 +57,10 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return response()->json([
-                'message' => 'Order not found.',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->notFound('Order not found.');
         }
 
-        return response()->json([
-            'data' => new OrderResource($order),
-        ]);
+        return $this->success(new OrderResource($order), 'Order retrieved.');
     }
 
     /**
@@ -79,18 +71,13 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return response()->json([
-                'message' => 'Order not found.',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->notFound('Order not found.');
         }
 
         $dto = UpdateOrderDTO::fromArray($request->validated());
         $updatedOrder = $this->orderService->updateOrder($order, $dto);
 
-        return response()->json([
-            'message' => 'Order updated successfully.',
-            'data' => new OrderResource($updatedOrder),
-        ]);
+        return $this->success(new OrderResource($updatedOrder), 'Order updated successfully.');
     }
 
     /**
@@ -101,18 +88,13 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return response()->json([
-                'message' => 'Order not found.',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->notFound('Order not found.');
         }
 
         $newStatus = OrderStatus::from($request->validated('status'));
         $updatedOrder = $this->orderService->updateStatus($order, $newStatus);
 
-        return response()->json([
-            'message' => 'Order status updated successfully.',
-            'data' => new OrderResource($updatedOrder),
-        ]);
+        return $this->success(new OrderResource($updatedOrder), 'Order status updated successfully.');
     }
 
     /**
@@ -123,15 +105,11 @@ class OrderController extends Controller
         $order = $this->orderService->getOrder($id, (int) $request->user()->id);
 
         if (!$order) {
-            return response()->json([
-                'message' => 'Order not found.',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->notFound('Order not found.');
         }
 
         $this->orderService->deleteOrder($order);
 
-        return response()->json([
-            'message' => 'Order deleted successfully.',
-        ], Response::HTTP_NO_CONTENT);
+        return $this->noContent('Order deleted successfully.');
     }
 }

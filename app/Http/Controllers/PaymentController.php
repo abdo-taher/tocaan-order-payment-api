@@ -8,7 +8,6 @@ use App\Http\Resources\PaymentResource;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class PaymentController extends Controller
 {
@@ -25,18 +24,11 @@ class PaymentController extends Controller
 
         $payment = $this->paymentService->processPayment($dto);
 
-        $statusCode = $payment->status->value === 'successful'
-            ? Response::HTTP_CREATED
-            : Response::HTTP_UNPROCESSABLE_ENTITY;
+        if ($payment->status->value === 'successful') {
+            return $this->created(new PaymentResource($payment), 'Payment processed successfully.');
+        }
 
-        $message = $payment->status->value === 'successful'
-            ? 'Payment processed successfully.'
-            : 'Payment processing failed.';
-
-        return response()->json([
-            'message' => $message,
-            'data' => new PaymentResource($payment),
-        ], $statusCode);
+        return $this->error('Payment processing failed.', 422);
     }
 
     /**
@@ -47,13 +39,9 @@ class PaymentController extends Controller
         $payment = $this->paymentService->getPaymentForOrder($orderId);
 
         if (!$payment) {
-            return response()->json([
-                'message' => 'No payment found for this order.',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->notFound('No payment found for this order.');
         }
 
-        return response()->json([
-            'data' => new PaymentResource($payment),
-        ]);
+        return $this->success(new PaymentResource($payment), 'Payment retrieved.');
     }
 }

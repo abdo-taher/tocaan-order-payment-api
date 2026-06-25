@@ -45,4 +45,13 @@ return [
     'deleted' => 'تم حذف المورد بنجاح.',
     'created' => 'تم إنشاء المورد بنجاح.',
 
+    // ─── Notifications ──────────────────────────────────────────────────
+    'notifications' => [
+        'payment_subject' => 'تأكيد الدفع',
+        'payment_greeting' => 'مرحباً :name،',
+        'payment_body' => 'تم معالجة دفعتك للطلب #:order_id بنجاح. المبلغ: $:amount عبر :method.',
+        'payment_transaction' => 'رقم العملية: :transaction_id',
+        'payment_thanks' => 'شكراً لعملية الشراء!',
+    ],
+
 ];

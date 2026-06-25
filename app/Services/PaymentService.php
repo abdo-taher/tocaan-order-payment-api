@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Notifications\PaymentSuccessfulNotification;
 use App\Payments\PaymentGatewayManager;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
@@ -55,6 +56,10 @@ class PaymentService
                 'status' => PaymentStatus::Successful->value,
                 'transaction_id' => $result['transaction_id'],
             ]);
+
+            // Send payment confirmation notification
+            $payment = $payment->fresh();
+            $order->user->notify(new PaymentSuccessfulNotification($payment));
         } else {
             $this->paymentRepository->update($payment, [
                 'status' => PaymentStatus::Failed->value,

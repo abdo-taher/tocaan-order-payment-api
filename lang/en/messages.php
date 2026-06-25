@@ -45,4 +45,13 @@ return [
     'deleted' => 'Resource deleted successfully.',
     'created' => 'Resource created successfully.',
 
+    // ─── Notifications ──────────────────────────────────────────────────
+    'notifications' => [
+        'payment_subject' => 'Payment Confirmation',
+        'payment_greeting' => 'Hello :name,',
+        'payment_body' => 'Your payment for Order #:order_id has been processed successfully. Amount: $:amount via :method.',
+        'payment_transaction' => 'Transaction ID: :transaction_id',
+        'payment_thanks' => 'Thank you for your purchase!',
+    ],
+
 ];

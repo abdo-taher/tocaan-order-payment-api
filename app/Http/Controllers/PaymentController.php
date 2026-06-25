@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\DTOs\ProcessPaymentDTO;
 use App\Http\Requests\Payment\ProcessPaymentRequest;
+use App\Http\Resources\PaymentCollection;
 use App\Http\Resources\PaymentResource;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +15,19 @@ class PaymentController extends Controller
     public function __construct(
         private readonly PaymentService $paymentService
     ) {}
+
+    /**
+     * List all payments for the authenticated user.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $payments = $this->paymentService->listPayments(
+            userId: (int) $request->user()->id,
+            perPage: (int) $request->query('per_page', 15),
+        );
+
+        return $this->paginated(new PaymentCollection($payments), 'messages.payments.retrieved');
+    }
 
     /**
      * Process a payment for an order.

@@ -78,6 +78,14 @@ class PaymentService
     }
 
     /**
+     * List all payments for a user with pagination.
+     */
+    public function listPayments(int $userId, int $perPage = 15): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return $this->paymentRepository->paginateByUser($userId, $perPage);
+    }
+
+    /**
      * Validate that the order is eligible for payment.
      *
      * @throws ValidationException

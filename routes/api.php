@@ -27,6 +27,7 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('orders', OrderController::class);
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
 
+    Route::get('payments', [PaymentController::class, 'index']);
     Route::post('payments', [PaymentController::class, 'store']);
     Route::get('orders/{order}/payment', [PaymentController::class, 'show']);
 });

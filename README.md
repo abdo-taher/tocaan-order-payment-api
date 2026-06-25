@@ -1,58 +1,379 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Tocaan Order & Payment API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A RESTful API built with Laravel 13 for managing orders and processing payments using JWT authentication and a Strategy Pattern for payment gateways.
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3+
+- Laravel 13.x
+- SQLite (development) / MySQL or PostgreSQL (production)
+- JWT Authentication (tymon/jwt-auth 2.0)
+- PHPUnit 12.x
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Architecture
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+The project follows Clean Architecture with layered separation:
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+Controller → Service → Repository → Model
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+- **Controllers** — Thin HTTP layer; delegates to services.
+- **Services** — Business logic and orchestration.
+- **Repositories** — Data access abstraction via interfaces.
+- **DTOs** — Data transfer between layers (readonly classes).
+- **Enums** — Type-safe status and method constants.
+- **Strategy Pattern** — Payment gateways resolved at runtime via config.
 
-## Contributing
+## Setup Instructions
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Prerequisites
 
-## Code of Conduct
+- PHP 8.3 or higher
+- Composer 2.x
+- Node.js & npm (for asset building, optional for API-only usage)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Installation
 
-## Security Vulnerabilities
+```bash
+# Clone the repository
+git clone <repository-url>
+cd tocaan-order-payment-api
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Install PHP dependencies
+composer install
+
+# Copy environment file
+cp .env.example .env
+
+# Generate application key
+php artisan key:generate
+
+# Generate JWT secret
+php artisan jwt:secret
+
+# Run migrations
+php artisan migrate
+
+# (Optional) Seed sample data
+php artisan db:seed
+```
+
+### Running the Application
+
+```bash
+# Start the development server
+php artisan serve
+
+# The API will be available at http://localhost:8000/api
+```
+
+### Running Tests
+
+```bash
+php artisan test
+```
+
+## Authentication
+
+All protected endpoints require a JWT token in the `Authorization` header:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+### Auth Endpoints
+
+| Method | Endpoint            | Description         | Auth |
+|--------|---------------------|---------------------|------|
+| POST   | `/api/auth/register`| Register a new user | No   |
+| POST   | `/api/auth/login`   | Login               | No   |
+| POST   | `/api/auth/logout`  | Logout              | Yes  |
+| GET    | `/api/auth/me`      | Get current user    | Yes  |
+
+## API Endpoints
+
+### Orders
+
+| Method | Endpoint                     | Description              | Auth |
+|--------|------------------------------|--------------------------|------|
+| GET    | `/api/orders`                | List orders (paginated)  | Yes  |
+| POST   | `/api/orders`                | Create a new order       | Yes  |
+| GET    | `/api/orders/{id}`           | View a single order      | Yes  |
+| PUT    | `/api/orders/{id}`           | Update order items       | Yes  |
+| DELETE | `/api/orders/{id}`           | Delete an order          | Yes  |
+| PATCH  | `/api/orders/{id}/status`    | Update order status      | Yes  |
+
+#### Query Parameters (GET /api/orders)
+
+- `status` — Filter by status: `pending`, `confirmed`, `cancelled`
+- `per_page` — Items per page (default: 15)
+- `page` — Page number
+
+### Payments
+
+| Method | Endpoint                      | Description                 | Auth |
+|--------|-------------------------------|-----------------------------|------|
+| POST   | `/api/payments`               | Process a payment           | Yes  |
+| GET    | `/api/orders/{id}/payment`    | View payment for an order   | Yes  |
+
+## Business Rules
+
+### Orders
+
+- New orders start with `pending` status
+- Valid transitions: `pending → confirmed`, `pending → cancelled`
+- Confirmed orders cannot be cancelled
+- Cancelled orders cannot be confirmed
+- Only pending orders can be modified or deleted
+- Orders with payments cannot be deleted
+- Order total is auto-calculated from items (quantity × price)
+
+### Payments
+
+- Payments can only be processed for `confirmed` orders
+- Payment amount must match order total exactly
+- Each order can only have one successful payment
+- Supported methods: `credit_card`, `paypal`, `cash`
+
+## Response Format
+
+### Success Response
+
+```json
+{
+    "message": "Order created successfully.",
+    "data": {
+        "id": 1,
+        "user_id": 1,
+        "status": "pending",
+        "total": "45.50",
+        "items": [...],
+        "created_at": "2026-06-24T16:00:00+00:00",
+        "updated_at": "2026-06-24T16:00:00+00:00"
+    }
+}
+```
+
+### Error Response
+
+```json
+{
+    "message": "The given data was invalid.",
+    "errors": {
+        "field": ["Error message."]
+    }
+}
+```
+
+### Paginated Response
+
+```json
+{
+    "data": [...],
+    "links": {
+        "first": "...",
+        "last": "...",
+        "prev": null,
+        "next": "..."
+    },
+    "meta": {
+        "current_page": 1,
+        "last_page": 3,
+        "per_page": 15,
+        "total": 42
+    }
+}
+```
+
+## Adding a New Payment Gateway
+
+The payment system uses the Strategy Pattern. To add a new gateway:
+
+### Step 1: Create the Gateway Class
+
+```php
+<?php
+
+namespace App\Payments\Gateways;
+
+use App\Payments\Contracts\PaymentGatewayInterface;
+
+class StripeGateway implements PaymentGatewayInterface
+{
+    public function charge(float $amount, array $details = []): array
+    {
+        // Integrate with Stripe SDK here
+        return [
+            'success' => true,
+            'transaction_id' => 'stripe_' . uniqid(),
+            'message' => 'Stripe payment processed.',
+        ];
+    }
+
+    public function getName(): string
+    {
+        return 'stripe';
+    }
+}
+```
+
+### Step 2: Register in Config
+
+Add the new gateway to `config/payment_gateways.php`:
+
+```php
+'gateways' => [
+    'credit_card' => CreditCardGateway::class,
+    'paypal' => PaypalGateway::class,
+    'cash' => CashGateway::class,
+    'stripe' => \App\Payments\Gateways\StripeGateway::class, // ← Add here
+],
+```
+
+That's it. No changes to existing code required (Open/Closed Principle).
+
+## Postman Collection Examples
+
+### Register
+
+```
+POST /api/auth/register
+Content-Type: application/json
+
+{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123",
+    "password_confirmation": "password123"
+}
+```
+
+### Login
+
+```
+POST /api/auth/login
+Content-Type: application/json
+
+{
+    "email": "john@example.com",
+    "password": "password123"
+}
+```
+
+### Create Order
+
+```
+POST /api/orders
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+    "items": [
+        {
+            "product_name": "Wireless Keyboard",
+            "quantity": 2,
+            "price": 49.99
+        },
+        {
+            "product_name": "USB-C Hub",
+            "quantity": 1,
+            "price": 35.00
+        }
+    ]
+}
+```
+
+### Update Order Items
+
+```
+PUT /api/orders/1
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+    "items": [
+        {
+            "product_name": "Wireless Keyboard",
+            "quantity": 3,
+            "price": 49.99
+        }
+    ]
+}
+```
+
+### Confirm Order
+
+```
+PATCH /api/orders/1/status
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+    "status": "confirmed"
+}
+```
+
+### Process Payment
+
+```
+POST /api/payments
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+    "order_id": 1,
+    "amount": 134.98,
+    "method": "credit_card"
+}
+```
+
+### List Orders with Filter
+
+```
+GET /api/orders?status=pending&per_page=10&page=1
+Authorization: Bearer <token>
+```
+
+### View Order Payment
+
+```
+GET /api/orders/1/payment
+Authorization: Bearer <token>
+```
+
+## Assumptions
+
+1. **Single payment per order** — Each order can have at most one successful payment. Failed payments are recorded but allow retry.
+2. **Simulated gateways** — Payment gateways simulate success for development. In production, integrate with real SDKs (Stripe, PayPal, etc.).
+3. **User-scoped orders** — Users can only access their own orders. There is no admin role yet.
+4. **No partial payments** — Payment amount must match the full order total.
+5. **SQLite for development** — The project uses SQLite for local development and testing. Configure MySQL/PostgreSQL in `.env` for production.
+6. **No order editing after confirmation** — Once confirmed, order items cannot be modified.
+7. **Cascading deletes** — Deleting an order removes its items and payments (database-level cascade).
+8. **Rate limiting** — Auth endpoints are rate-limited to 5 requests per minute to prevent brute force.
+
+## Project Structure
+
+```
+app/
+├── DTOs/                    # Data Transfer Objects
+├── Enums/                   # OrderStatus, PaymentStatus, PaymentMethod
+├── Http/
+│   ├── Controllers/         # Thin controllers
+│   ├── Requests/            # Form Request validation
+│   └── Resources/           # API Resource transformations
+├── Models/                  # Eloquent models with relationships
+├── Payments/
+│   ├── Contracts/           # PaymentGatewayInterface
+│   └── Gateways/            # CreditCard, PayPal, Cash gateways
+├── Repositories/
+│   ├── Contracts/           # Repository interfaces
+│   └── Eloquent/            # Eloquent implementations
+├── Services/                # Business logic layer
+└── Providers/               # Service & repository bindings
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
